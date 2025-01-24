@@ -53,19 +53,80 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('interactionCreate', async interaction => {
+    // Gestion des sélections
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'teacher_select') {
+            // Stockage temporaire de l'ID du professeur sélectionné
             const teacherId = interaction.values[0];
-            const teacher = await interaction.guild.members.fetch(teacherId);
-            await teacher.send('On peut signer ?');
-            await interaction.reply({ content: 'Message envoyé au professeur', ephemeral: true });
+            await interaction.update({ components: interaction.message.components });
+            
         } else if (interaction.customId === 'student_select') {
+            // Stockage temporaire des IDs des étudiants sélectionnés
             const studentIds = interaction.values;
-            for (const studentId of studentIds) {
-                const student = await interaction.guild.members.fetch(studentId);
-                await student.send('Vérifiez votre signature');
+            await interaction.update({ components: interaction.message.components });
+        }
+    }
+    
+    // Gestion des boutons
+    if (interaction.isButton()) {
+        if (interaction.customId === 'claim_signature') {
+            const teacherSelect = interaction.message.components[0].components[0];
+            if (!teacherSelect.data.values || teacherSelect.data.values.length !== 1) {
+                await interaction.reply({ 
+                    content: 'Veuillez sélectionner un professeur d\'abord', 
+                    ephemeral: true 
+                });
+                return;
             }
-            await interaction.reply({ content: 'Messages envoyés aux étudiants', ephemeral: true });
+            
+            const teacherId = teacherSelect.data.values[0];
+            try {
+                const teacher = await interaction.guild.members.fetch(teacherId);
+                await teacher.send('On peut signer ?');
+                await interaction.reply({ 
+                    content: 'Message envoyé au professeur', 
+                    ephemeral: true 
+                });
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi du message au professeur:', error);
+                await interaction.reply({ 
+                    content: 'Erreur lors de l\'envoi du message', 
+                    ephemeral: true 
+                });
+            }
+        } else if (interaction.customId === 'remind_selected' || interaction.customId === 'remind_all') {
+            const studentSelect = interaction.message.components[0].components[0];
+            let studentIds = [];
+            
+            if (interaction.customId === 'remind_all') {
+                studentIds = studentSelect.data.options.map(option => option.value);
+            } else {
+                if (!studentSelect.data.values || studentSelect.data.values.length === 0) {
+                    await interaction.reply({ 
+                        content: 'Veuillez sélectionner au moins un étudiant', 
+                        ephemeral: true 
+                    });
+                    return;
+                }
+                studentIds = studentSelect.data.values;
+            }
+            
+            try {
+                for (const studentId of studentIds) {
+                    const student = await interaction.guild.members.fetch(studentId);
+                    await student.send('Vérifiez votre signature');
+                }
+                await interaction.reply({ 
+                    content: 'Messages envoyés aux étudiants', 
+                    ephemeral: true 
+                });
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi des messages aux étudiants:', error);
+                await interaction.reply({ 
+                    content: 'Erreur lors de l\'envoi des messages', 
+                    ephemeral: true 
+                });
+            }
         }
     }
 });
