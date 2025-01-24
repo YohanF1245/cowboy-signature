@@ -13,6 +13,13 @@ function createSignatureEmbed() {
                 .setPlaceholder('Sélectionnez un professeur')
                 .setMinValues(1)
                 .setMaxValues(1)
+                .addOptions([
+                    {
+                        label: 'Professeur Test',
+                        value: 'prof_test',
+                        description: 'Pour les tests'
+                    }
+                ])
         );
 
     const claimButton = new ActionRowBuilder()
@@ -42,6 +49,13 @@ function createReminderEmbed() {
                 .setPlaceholder('Sélectionnez les étudiants')
                 .setMinValues(1)
                 .setMaxValues(25)
+                .addOptions([
+                    {
+                        label: 'Étudiant Test',
+                        value: 'student_test',
+                        description: 'Pour les tests'
+                    }
+                ])
         );
 
     const reminderButtons = new ActionRowBuilder()

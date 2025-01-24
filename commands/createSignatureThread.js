@@ -9,7 +9,7 @@ module.exports = {
             option.setName('channel')
                 .setDescription('Canal de promotion spécifique')
                 .setRequired(false)
-                .addChannelTypes(ChannelType.GuildText))
+                .addChannelTypes(ChannelType.GuildText, ChannelType.GuildForum))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     async execute(interaction) {
@@ -17,29 +17,34 @@ module.exports = {
             console.log('Exécution de create_signature_thread');
             const channel = interaction.options.getChannel('channel') || interaction.channel;
             
-            // Vérifier que le canal est un canal texte
-            if (channel.type !== ChannelType.GuildText) {
+            let thread;
+            if (channel.type === ChannelType.GuildForum) {
+                thread = await channel.threads.create({
+                    name: 'Signatures',
+                    message: {
+                        content: 'Thread de signatures créé'
+                    },
+                    autoArchiveDuration: 60,
+                    reason: 'Thread de signature pour la promotion'
+                });
+            } else if (channel.type === ChannelType.GuildText) {
+                thread = await channel.threads.create({
+                    name: 'Signatures',
+                    autoArchiveDuration: 60,
+                    reason: 'Thread de signature pour la promotion'
+                });
+            } else {
                 return interaction.reply({
-                    content: 'Cette commande ne peut être utilisée que dans un canal texte.',
+                    content: 'Cette commande ne peut être utilisée que dans un canal texte ou un forum.',
                     ephemeral: true
                 });
             }
 
-            // Créer le thread avec un message initial
-            const thread = await channel.threads.create({
-                name: 'Signatures',
-                autoArchiveDuration: 60,
-                reason: 'Thread de signature pour la promotion',
-                message: {
-                    content: 'Thread de signatures créé'
-                }
-            });
-
             const signatureEmbed = createSignatureEmbed();
             const reminderEmbed = createReminderEmbed();
 
-            await thread.send({ embeds: [signatureEmbed.embeds], components: signatureEmbed.components });
-            await thread.send({ embeds: [reminderEmbed.embeds], components: reminderEmbed.components });
+            await thread.send(signatureEmbed);
+            await thread.send(reminderEmbed);
 
             await interaction.reply({ 
                 content: `Thread de signature créé dans ${channel}`, 
