@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { token } = require('./config.js');
 const fs = require('fs');
 const path = require('path');
@@ -54,28 +54,50 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'teacher_select') {
             const teacherId = interaction.values[0];
-            const components = interaction.message.components;
             
-            // Active le bouton quand un prof est sélectionné
-            components[1].components[0].setDisabled(false);
-            
+            // Récupère les composants actuels
+            const teacherSelect = interaction.message.components[0];
+            const claimButton = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('claim_signature')
+                        .setLabel('Réclamer le code')
+                        .setStyle(ButtonStyle.Primary)
+                        .setDisabled(false)
+                );
+
             await interaction.update({ 
-                components: components,
+                components: [teacherSelect, claimButton],
                 fetchReply: true 
             });
+            
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
-            const components = interaction.message.components;
-            components[0].components[0].data.values = studentIds;
-            await interaction.update({ components: components });
+            const studentSelect = interaction.message.components[0];
+            const reminderButtons = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('remind_selected')
+                        .setLabel('Rappeler les sélectionnés')
+                        .setStyle(ButtonStyle.Primary)
+                        .setDisabled(studentIds.length === 0),
+                    new ButtonBuilder()
+                        .setCustomId('remind_all')
+                        .setLabel('Rappeler tous')
+                        .setStyle(ButtonStyle.Danger)
+                );
+
+            await interaction.update({ 
+                components: [studentSelect, reminderButtons]
+            });
         }
     }
     
     if (interaction.isButton()) {
         if (interaction.customId === 'claim_signature') {
             const teacherSelect = interaction.message.components[0].components[0];
-            const selectedTeacherId = interaction.message.components[0].components[0].options.find(
-                option => option.value === interaction.values[0]
+            const selectedTeacherId = interaction.values?.[0] || teacherSelect.options.find(
+                option => option.default
             )?.value;
             
             if (!selectedTeacherId) {
@@ -98,9 +120,19 @@ client.on('interactionCreate', async interaction => {
                 );
                 
                 // Désactive le bouton après l'envoi
-                const components = interaction.message.components;
-                components[1].components[0].setDisabled(true);
-                await interaction.message.edit({ components });
+                const teacherSelect = interaction.message.components[0];
+                const claimButton = new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setCustomId('claim_signature')
+                            .setLabel('Réclamer le code')
+                            .setStyle(ButtonStyle.Primary)
+                            .setDisabled(true)
+                    );
+
+                await interaction.message.edit({ 
+                    components: [teacherSelect, claimButton]
+                });
                 
                 await interaction.reply({ 
                     content: 'Message envoyé au professeur', 
@@ -118,17 +150,16 @@ client.on('interactionCreate', async interaction => {
             let studentIds = [];
             
             if (interaction.customId === 'remind_all') {
-                studentIds = studentSelect.data.options.map(option => option.value);
+                studentIds = studentSelect.options.map(option => option.value);
             } else {
-                const selectedStudents = studentSelect.data.values;
-                if (!selectedStudents || selectedStudents.length === 0) {
+                studentIds = interaction.values || [];
+                if (studentIds.length === 0) {
                     await interaction.reply({ 
                         content: 'Veuillez sélectionner au moins un étudiant', 
                         ephemeral: true 
                     });
                     return;
                 }
-                studentIds = selectedStudents;
             }
             
             try {
