@@ -52,6 +52,24 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+client.on('interactionCreate', async interaction => {
+    if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === 'teacher_select') {
+            const teacherId = interaction.values[0];
+            const teacher = await interaction.guild.members.fetch(teacherId);
+            await teacher.send('On peut signer ?');
+            await interaction.reply({ content: 'Message envoyé au professeur', ephemeral: true });
+        } else if (interaction.customId === 'student_select') {
+            const studentIds = interaction.values;
+            for (const studentId of studentIds) {
+                const student = await interaction.guild.members.fetch(studentId);
+                await student.send('Vérifiez votre signature');
+            }
+            await interaction.reply({ content: 'Messages envoyés aux étudiants', ephemeral: true });
+        }
+    }
+});
+
 client.once('ready', () => {
     console.log(`Bot connecté en tant que ${client.user.tag}`);
     console.log('Commandes chargées:', Array.from(client.commands.keys()));
