@@ -15,14 +15,14 @@ function createSignatureEmbed() {
                 .setMaxValues(1)
                 .addOptions([
                     {
-                        label: 'Professeur Test 1',
-                        value: 'prof_test_1',
-                        description: 'Pour les tests'
+                        label: 'Yohan',
+                        value: '223812446312202251',
+                        description: 'Yohan le testeur'
                     },
                     ...Array.from({ length: 24 }, (_, i) => ({
-                        label: `Professeur Test ${i + 2}`,
-                        value: `prof_test_${i + 2}`,
-                        description: `Professeur de test ${i + 2}`
+                        label: `Professeur Test ${i + 1}`,
+                        value: `prof_test_${i + 1}`,
+                        description: `Professeur de test ${i + 1}`
                     }))
                 ])
         );
@@ -56,14 +56,14 @@ function createReminderEmbed() {
                 .setMaxValues(25)
                 .addOptions([
                     {
-                        label: 'Étudiant Test 1',
-                        value: 'student_test_1',
-                        description: 'Pour les tests'
+                        label: 'Yohan',
+                        value: '223812446312202251',
+                        description: 'Yohan l\'étudiant'
                     },
                     ...Array.from({ length: 24 }, (_, i) => ({
-                        label: `Étudiant Test ${i + 2}`,
-                        value: `student_test_${i + 2}`,
-                        description: `Étudiant de test ${i + 2}`
+                        label: `Étudiant Test ${i + 1}`,
+                        value: `student_test_${i + 1}`,
+                        description: `Étudiant de test ${i + 1}`
                     }))
                 ])
         );
