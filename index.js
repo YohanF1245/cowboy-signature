@@ -71,14 +71,16 @@ client.on('interactionCreate', async interaction => {
     // Gestion des sélections
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'teacher_select') {
-            // Stockage temporaire de l'ID du professeur sélectionné
             const teacherId = interaction.values[0];
-            await interaction.update({ components: interaction.message.components });
+            const components = interaction.message.components;
+            components[0].components[0].data.values = [teacherId]; // Sauvegarde de la sélection
+            await interaction.update({ components: components });
             
         } else if (interaction.customId === 'student_select') {
-            // Stockage temporaire des IDs des étudiants sélectionnés
             const studentIds = interaction.values;
-            await interaction.update({ components: interaction.message.components });
+            const components = interaction.message.components;
+            components[0].components[0].data.values = studentIds; // Sauvegarde des sélections
+            await interaction.update({ components: components });
         }
     }
     
@@ -86,7 +88,9 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
         if (interaction.customId === 'claim_signature') {
             const teacherSelect = interaction.message.components[0].components[0];
-            if (!teacherSelect.data.values || teacherSelect.data.values.length !== 1) {
+            const selectedTeacher = teacherSelect.data.values ? teacherSelect.data.values[0] : null;
+            
+            if (!selectedTeacher) {
                 await interaction.reply({ 
                     content: 'Veuillez sélectionner un professeur d\'abord', 
                     ephemeral: true 
@@ -94,9 +98,8 @@ client.on('interactionCreate', async interaction => {
                 return;
             }
             
-            const teacherId = teacherSelect.data.values[0];
             try {
-                const teacher = await interaction.guild.members.fetch(teacherId);
+                const teacher = await interaction.guild.members.fetch(selectedTeacher);
                 const threadUrl = interaction.message.channel.url;
                 const formattedDate = formatDate();
                 
@@ -124,14 +127,15 @@ client.on('interactionCreate', async interaction => {
             if (interaction.customId === 'remind_all') {
                 studentIds = studentSelect.data.options.map(option => option.value);
             } else {
-                if (!studentSelect.data.values || studentSelect.data.values.length === 0) {
+                const selectedStudents = studentSelect.data.values;
+                if (!selectedStudents || selectedStudents.length === 0) {
                     await interaction.reply({ 
                         content: 'Veuillez sélectionner au moins un étudiant', 
                         ephemeral: true 
                     });
                     return;
                 }
-                studentIds = studentSelect.data.values;
+                studentIds = selectedStudents;
             }
             
             try {
@@ -148,7 +152,7 @@ client.on('interactionCreate', async interaction => {
                 }
                 
                 await interaction.reply({ 
-                    content: 'Messages envoyés aux étudiants', 
+                    content: `Messages envoyés à ${studentIds.length} étudiant(s)`, 
                     ephemeral: true 
                 });
             } catch (error) {
