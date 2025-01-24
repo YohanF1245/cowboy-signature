@@ -150,11 +150,12 @@ client.on('interactionCreate', async interaction => {
                 const teacher = await interaction.guild.members.fetch(selectedTeacherId);
                 const threadUrl = interaction.message.channel.url;
                 const formattedDate = formatDate();
+                const requester = interaction.member.displayName;
                 
                 await teacher.send(
-                    `[${formattedDate}]\n` +
-                    `On peut signer ?\n` +
-                    `Thread source: ${threadUrl}`
+                    `${formattedDate}\n` +
+                    `${requester} demande: On peut signer ?\n` +
+                    `Lien vers l'interface signature: ${threadUrl}`
                 );
                 
                 // Désactive le bouton après l'envoi
@@ -196,15 +197,14 @@ client.on('interactionCreate', async interaction => {
             }
 
             try {
-                const threadUrl = interaction.message.channel.url;
                 const formattedDate = formatDate();
+                const requester = interaction.member.displayName;
                 
                 for (const student of selectedStudents) {
                     const member = await interaction.guild.members.fetch(student.value);
                     await member.send(
-                        `[${formattedDate}]\n` +
-                        `Vérifiez votre signature\n` +
-                        `Thread source: ${threadUrl}`
+                        `${formattedDate}\n` +
+                        `${requester} vous rappelle: Vérifiez votre signature`
                     );
                 }
                 
@@ -226,15 +226,14 @@ client.on('interactionCreate', async interaction => {
             studentIds = studentSelect.options.map(option => option.value);
             
             try {
-                const threadUrl = interaction.message.channel.url;
                 const formattedDate = formatDate();
+                const requester = interaction.member.displayName;
                 
                 for (const studentId of studentIds) {
                     const student = await interaction.guild.members.fetch(studentId);
                     await student.send(
-                        `[${formattedDate}]\n` +
-                        `Vérifiez votre signature\n` +
-                        `Thread source: ${threadUrl}`
+                        `${formattedDate}\n` +
+                        `${requester} vous rappelle: Vérifiez votre signature`
                     );
                 }
                 
@@ -265,7 +264,7 @@ function formatDate() {
     const date = now.toLocaleDateString('fr-FR');
     const timeOfDay = getTimeOfDay();
     
-    return `${day} ${date} ${timeOfDay}`;
+    return `${day} - ${date} - cours du ${timeOfDay}`;
 }
 
 client.once('ready', () => {
