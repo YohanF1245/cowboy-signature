@@ -52,6 +52,21 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+function getTimeOfDay() {
+    const hour = new Date().getHours();
+    return hour < 12 ? 'matin' : 'midi';
+}
+
+function formatDate() {
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const now = new Date();
+    const day = days[now.getDay()];
+    const date = now.toLocaleDateString('fr-FR');
+    const timeOfDay = getTimeOfDay();
+    
+    return `${day} ${date} ${timeOfDay}`;
+}
+
 client.on('interactionCreate', async interaction => {
     // Gestion des sélections
     if (interaction.isStringSelectMenu()) {
@@ -82,7 +97,15 @@ client.on('interactionCreate', async interaction => {
             const teacherId = teacherSelect.data.values[0];
             try {
                 const teacher = await interaction.guild.members.fetch(teacherId);
-                await teacher.send('On peut signer ?');
+                const threadUrl = interaction.message.channel.url;
+                const formattedDate = formatDate();
+                
+                await teacher.send(
+                    `[${formattedDate}]\n` +
+                    `On peut signer ?\n` +
+                    `Thread source: ${threadUrl}`
+                );
+                
                 await interaction.reply({ 
                     content: 'Message envoyé au professeur', 
                     ephemeral: true 
@@ -112,10 +135,18 @@ client.on('interactionCreate', async interaction => {
             }
             
             try {
+                const threadUrl = interaction.message.channel.url;
+                const formattedDate = formatDate();
+                
                 for (const studentId of studentIds) {
                     const student = await interaction.guild.members.fetch(studentId);
-                    await student.send('Vérifiez votre signature');
+                    await student.send(
+                        `[${formattedDate}]\n` +
+                        `Vérifiez votre signature\n` +
+                        `Thread source: ${threadUrl}`
+                    );
                 }
+                
                 await interaction.reply({ 
                     content: 'Messages envoyés aux étudiants', 
                     ephemeral: true 
