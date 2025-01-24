@@ -55,8 +55,15 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'teacher_select') {
             const teacherId = interaction.values[0];
             
-            // Récupère les composants actuels
-            const teacherSelect = interaction.message.components[0];
+            // Récupère les composants actuels et préserve la sélection
+            const teacherSelect = ActionRowBuilder.from(interaction.message.components[0]);
+            teacherSelect.components[0].setOptions(
+                teacherSelect.components[0].options.map(option => ({
+                    ...option,
+                    default: option.value === teacherId
+                }))
+            );
+
             const claimButton = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -67,13 +74,21 @@ client.on('interactionCreate', async interaction => {
                 );
 
             await interaction.update({ 
-                components: [teacherSelect, claimButton],
-                fetchReply: true 
+                components: [teacherSelect, claimButton]
             });
             
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
-            const studentSelect = interaction.message.components[0];
+            
+            // Récupère les composants actuels et préserve les sélections
+            const studentSelect = ActionRowBuilder.from(interaction.message.components[0]);
+            studentSelect.components[0].setOptions(
+                studentSelect.components[0].options.map(option => ({
+                    ...option,
+                    default: studentIds.includes(option.value)
+                }))
+            );
+
             const reminderButtons = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -96,9 +111,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
         if (interaction.customId === 'claim_signature') {
             const teacherSelect = interaction.message.components[0].components[0];
-            const selectedTeacherId = interaction.values?.[0] || teacherSelect.options.find(
-                option => option.default
-            )?.value;
+            const selectedTeacherId = teacherSelect.options.find(option => option.default)?.value;
             
             if (!selectedTeacherId) {
                 await interaction.reply({ 
@@ -120,7 +133,7 @@ client.on('interactionCreate', async interaction => {
                 );
                 
                 // Désactive le bouton après l'envoi
-                const teacherSelect = interaction.message.components[0];
+                const teacherSelect = ActionRowBuilder.from(interaction.message.components[0]);
                 const claimButton = new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
