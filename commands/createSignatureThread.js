@@ -17,6 +17,16 @@ module.exports = {
             console.log('Exécution de create_signature_thread');
             const channel = interaction.options.getChannel('channel') || interaction.channel;
             
+            // Recherche et suppression des threads "Signatures" existants
+            const existingThreads = await channel.threads.fetch();
+            const signatureThreads = existingThreads.threads.filter(thread => thread.name === 'Signatures');
+            
+            for (const thread of signatureThreads.values()) {
+                console.log(`Suppression du thread ${thread.id}`);
+                await thread.delete();
+            }
+
+            // Création du nouveau thread
             let thread;
             if (channel.type === ChannelType.GuildForum) {
                 thread = await channel.threads.create({
