@@ -1,0 +1,4 @@
+mkdir discord-signature-bot
+cd discord-signature-bot
+npm init -y
+npm install discord.js @discordjs/builders @discordjs/rest discord-api-types dotenv 

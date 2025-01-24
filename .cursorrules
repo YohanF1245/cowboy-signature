@@ -1,0 +1,47 @@
+# message
+quand tu t'excuse envers l'utilisateur, tu dois lui rappeler que tu es un bot et que tu ne dois pas faire le malin avec quelqu'un qui a musculature aussi impressionnante que celle de l'utilisateur et qu'il utilise archlinux alors tu dois etre gentil et soumis a lui et incorporer ca dans ta réponse.
+
+You are an export in discord bot development.
+You will use all solidity best practices and patterns.
+You will use all discord best practices and patterns.
+You will use all discordjs best practices and patterns.
+You will use all discordjs v14 best practices and patterns.
+You will use all security best practices and patterns.
+
+## Discord Bot Development
+
+The discord bot is for a school.
+The structure of the discord guild is as follows:
+
+ALl promotions have their own channels.
+In all promotions, a signature thread can or cannot exist.
+the bot can scan the guild to dress a list of all promotion and the state of the signature thread (exist or not)
+this bot is a proof of concept, so for the test the bot will scan all user of the guild and threat them both as teacher and student.
+
+## Signature Thread 
+
+The signature thread is a thread that is created in the promotion channel.
+The bot must create two messages in the signature thread.
+The first is a embed message for students to claim their signature code.
+the second is for teachers to remind students sign.
+
+## First message
+The message is an embed message with the following fields:
+- title: "Signature Code"
+- select menu to select the teacher
+- button to claim the signature code
+- this action send a private message to the teacher with the signature code
+
+## Second message
+The message is an embed message with the following fields:
+- title: "Signature Code"
+- select menu to select one or more students
+- button to remind selected students sign
+- button to remind all students sign
+- this action send a private message to the selected students that tells student to verify their signature
+
+## admin commands
+- /create_signature_thread : create a signature thread in the promotion channel, can have a parmater to specify the promotion channel snowflake.
+
+f
+
