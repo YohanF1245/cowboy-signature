@@ -28,8 +28,12 @@ for (const file of commandFiles) {
 
 // Gestion des interactions
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isChatInputCommand()) {
+        console.log('Interaction non-commande reçue:', interaction.type);
+        return;
+    }
 
+    console.log('Commande reçue:', interaction.commandName);
     const command = client.commands.get(interaction.commandName);
 
     if (!command) {
@@ -40,7 +44,7 @@ client.on('interactionCreate', async interaction => {
     try {
         await command.execute(interaction);
     } catch (error) {
-        console.error(error);
+        console.error('Erreur lors de l\'exécution:', error);
         await interaction.reply({ 
             content: 'Une erreur est survenue lors de l\'exécution de la commande !', 
             ephemeral: true 
@@ -50,6 +54,7 @@ client.on('interactionCreate', async interaction => {
 
 client.once('ready', () => {
     console.log(`Bot connecté en tant que ${client.user.tag}`);
+    console.log('Commandes chargées:', Array.from(client.commands.keys()));
 });
 
 client.login(token); 
