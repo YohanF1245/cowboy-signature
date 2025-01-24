@@ -1,24 +1,6 @@
-const { Client, GatewayIntentBits, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
-const { token } = require('./config.js');
-const fs = require('fs');
-const path = require('path');
-
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.MessageContent
-    ]
-});
-
-client.commands = new Collection();
-
-// Chargement des commandes
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
+const { Client, GatewayIntentBits, Collection, ActionRowBuilder, 
+    
+    
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
     if ('data' in command && 'execute' in command) {
@@ -89,7 +71,6 @@ client.on('interactionCreate', async interaction => {
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
             
-            // Création d'un nouveau menu avec les options mises à jour
             const studentSelect = new ActionRowBuilder()
                 .addComponents(
                     new StringSelectMenuBuilder()
@@ -176,22 +157,47 @@ client.on('interactionCreate', async interaction => {
                     ephemeral: true 
                 });
             }
-        } else if (interaction.customId === 'remind_selected' || interaction.customId === 'remind_all') {
+        } else if (interaction.customId === 'remind_selected') {
+            const studentSelect = interaction.message.components[0].components[0];
+            const selectedStudents = studentSelect.options.filter(option => option.default);
+            
+            if (selectedStudents.length === 0) {
+                await interaction.reply({ 
+                    content: 'Veuillez sélectionner au moins un étudiant', 
+                    ephemeral: true 
+                });
+                return;
+            }
+
+            try {
+                const threadUrl = interaction.message.channel.url;
+                const formattedDate = formatDate();
+                
+                for (const student of selectedStudents) {
+                    const member = await interaction.guild.members.fetch(student.value);
+                    await member.send(
+                        `[${formattedDate}]\n` +
+                        `Vérifiez votre signature\n` +
+                        `Thread source: ${threadUrl}`
+                    );
+                }
+                
+                await interaction.reply({ 
+                    content: `Messages envoyés à ${selectedStudents.length} étudiant(s)`, 
+                    ephemeral: true 
+                });
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi des messages aux étudiants:', error);
+                await interaction.reply({ 
+                    content: 'Erreur lors de l\'envoi des messages', 
+                    ephemeral: true 
+                });
+            }
+        } else if (interaction.customId === 'remind_all') {
             const studentSelect = interaction.message.components[0].components[0];
             let studentIds = [];
             
-            if (interaction.customId === 'remind_all') {
-                studentIds = studentSelect.options.map(option => option.value);
-            } else {
-                studentIds = interaction.values || [];
-                if (studentIds.length === 0) {
-                    await interaction.reply({ 
-                        content: 'Veuillez sélectionner au moins un étudiant', 
-                        ephemeral: true 
-                    });
-                    return;
-                }
-            }
+            studentIds = studentSelect.options.map(option => option.value);
             
             try {
                 const threadUrl = interaction.message.channel.url;
