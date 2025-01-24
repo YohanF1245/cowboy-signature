@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { token } = require('./config.js');
 const fs = require('fs');
 const path = require('path');
@@ -55,14 +55,23 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'teacher_select') {
             const teacherId = interaction.values[0];
             
-            // Récupère les composants actuels et préserve la sélection
-            const teacherSelect = ActionRowBuilder.from(interaction.message.components[0]);
-            teacherSelect.components[0].setOptions(
-                teacherSelect.components[0].options.map(option => ({
-                    ...option,
-                    default: option.value === teacherId
-                }))
-            );
+            // Création d'un nouveau menu avec les options mises à jour
+            const teacherSelect = new ActionRowBuilder()
+                .addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('teacher_select')
+                        .setPlaceholder('Sélectionnez un professeur')
+                        .setMinValues(1)
+                        .setMaxValues(1)
+                        .addOptions(
+                            interaction.message.components[0].components[0].options.map(option => ({
+                                label: option.label,
+                                value: option.value,
+                                description: option.description,
+                                default: option.value === teacherId
+                            }))
+                        )
+                );
 
             const claimButton = new ActionRowBuilder()
                 .addComponents(
@@ -80,14 +89,23 @@ client.on('interactionCreate', async interaction => {
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
             
-            // Récupère les composants actuels et préserve les sélections
-            const studentSelect = ActionRowBuilder.from(interaction.message.components[0]);
-            studentSelect.components[0].setOptions(
-                studentSelect.components[0].options.map(option => ({
-                    ...option,
-                    default: studentIds.includes(option.value)
-                }))
-            );
+            // Création d'un nouveau menu avec les options mises à jour
+            const studentSelect = new ActionRowBuilder()
+                .addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('student_select')
+                        .setPlaceholder('Sélectionnez les étudiants')
+                        .setMinValues(1)
+                        .setMaxValues(25)
+                        .addOptions(
+                            interaction.message.components[0].components[0].options.map(option => ({
+                                label: option.label,
+                                value: option.value,
+                                description: option.description,
+                                default: studentIds.includes(option.value)
+                            }))
+                        )
+                );
 
             const reminderButtons = new ActionRowBuilder()
                 .addComponents(
