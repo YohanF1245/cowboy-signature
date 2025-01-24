@@ -1,0 +1,21 @@
+{
+  "name": "discord-signature-bot",
+  "version": "1.0.0",
+  "description": "Bot de signature pour école",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js",
+    "docker:build": "docker-compose build",
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "@discordjs/builders": "^1.6.3",
+    "@discordjs/rest": "^1.7.1",
+    "discord-api-types": "^0.37.42",
+    "dotenv": "^16.0.3"
+  }
+} 
