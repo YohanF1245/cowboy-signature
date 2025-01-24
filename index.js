@@ -28,63 +28,44 @@ for (const file of commandFiles) {
 
 // Gestion des interactions
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) {
-        console.log('Interaction non-commande reçue:', interaction.type);
+    // Gestion des commandes slash
+    if (interaction.isChatInputCommand()) {
+        console.log('Commande reçue:', interaction.commandName);
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command) {
+            console.error(`Aucune commande ${interaction.commandName} n'a été trouvée.`);
+            return;
+        }
+
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error('Erreur lors de l\'exécution:', error);
+            await interaction.reply({ 
+                content: 'Une erreur est survenue lors de l\'exécution de la commande !', 
+                ephemeral: true 
+            });
+        }
         return;
     }
 
-    console.log('Commande reçue:', interaction.commandName);
-    const command = client.commands.get(interaction.commandName);
-
-    if (!command) {
-        console.error(`Aucune commande ${interaction.commandName} n'a été trouvée.`);
-        return;
-    }
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error('Erreur lors de l\'exécution:', error);
-        await interaction.reply({ 
-            content: 'Une erreur est survenue lors de l\'exécution de la commande !', 
-            ephemeral: true 
-        });
-    }
-});
-
-function getTimeOfDay() {
-    const hour = new Date().getHours();
-    return hour < 12 ? 'matin' : 'midi';
-}
-
-function formatDate() {
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    const now = new Date();
-    const day = days[now.getDay()];
-    const date = now.toLocaleDateString('fr-FR');
-    const timeOfDay = getTimeOfDay();
-    
-    return `${day} ${date} ${timeOfDay}`;
-}
-
-client.on('interactionCreate', async interaction => {
-    // Gestion des sélections
+    // Gestion des sélections et boutons
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'teacher_select') {
             const teacherId = interaction.values[0];
             const components = interaction.message.components;
-            components[0].components[0].data.values = [teacherId]; // Sauvegarde de la sélection
+            components[0].components[0].data.values = [teacherId];
             await interaction.update({ components: components });
             
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
             const components = interaction.message.components;
-            components[0].components[0].data.values = studentIds; // Sauvegarde des sélections
+            components[0].components[0].data.values = studentIds;
             await interaction.update({ components: components });
         }
     }
     
-    // Gestion des boutons
     if (interaction.isButton()) {
         if (interaction.customId === 'claim_signature') {
             const teacherSelect = interaction.message.components[0].components[0];
@@ -165,6 +146,21 @@ client.on('interactionCreate', async interaction => {
         }
     }
 });
+
+function getTimeOfDay() {
+    const hour = new Date().getHours();
+    return hour < 12 ? 'matin' : 'midi';
+}
+
+function formatDate() {
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const now = new Date();
+    const day = days[now.getDay()];
+    const date = now.toLocaleDateString('fr-FR');
+    const timeOfDay = getTimeOfDay();
+    
+    return `${day} ${date} ${timeOfDay}`;
+}
 
 client.once('ready', () => {
     console.log(`Bot connecté en tant que ${client.user.tag}`);
