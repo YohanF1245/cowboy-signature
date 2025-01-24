@@ -33,6 +33,7 @@ function createSignatureEmbed() {
                 .setCustomId('claim_signature')
                 .setLabel('Réclamer le code')
                 .setStyle(ButtonStyle.Primary)
+                .setDisabled(true)
         );
 
     return {

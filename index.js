@@ -55,9 +55,14 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'teacher_select') {
             const teacherId = interaction.values[0];
             const components = interaction.message.components;
-            components[0].components[0].data.values = [teacherId];
-            await interaction.update({ components: components });
             
+            // Active le bouton quand un prof est sélectionné
+            components[1].components[0].setDisabled(false);
+            
+            await interaction.update({ 
+                components: components,
+                fetchReply: true 
+            });
         } else if (interaction.customId === 'student_select') {
             const studentIds = interaction.values;
             const components = interaction.message.components;
@@ -69,9 +74,11 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
         if (interaction.customId === 'claim_signature') {
             const teacherSelect = interaction.message.components[0].components[0];
-            const selectedTeacher = teacherSelect.data.values ? teacherSelect.data.values[0] : null;
+            const selectedTeacherId = interaction.message.components[0].components[0].options.find(
+                option => option.value === interaction.values[0]
+            )?.value;
             
-            if (!selectedTeacher) {
+            if (!selectedTeacherId) {
                 await interaction.reply({ 
                     content: 'Veuillez sélectionner un professeur d\'abord', 
                     ephemeral: true 
@@ -80,7 +87,7 @@ client.on('interactionCreate', async interaction => {
             }
             
             try {
-                const teacher = await interaction.guild.members.fetch(selectedTeacher);
+                const teacher = await interaction.guild.members.fetch(selectedTeacherId);
                 const threadUrl = interaction.message.channel.url;
                 const formattedDate = formatDate();
                 
@@ -89,6 +96,11 @@ client.on('interactionCreate', async interaction => {
                     `On peut signer ?\n` +
                     `Thread source: ${threadUrl}`
                 );
+                
+                // Désactive le bouton après l'envoi
+                const components = interaction.message.components;
+                components[1].components[0].setDisabled(true);
+                await interaction.message.edit({ components });
                 
                 await interaction.reply({ 
                     content: 'Message envoyé au professeur', 
